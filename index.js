@@ -47,7 +47,7 @@ app.post('/request', async function (req, res) {
             )
             .then((rep) => console.log(rep.data.msg))
             .catch((error) => {
-              res.status(error.response.status).send(`Sur la ligne ${t} ${error.response.data.msg}`);
+              res.status(error.response.status).send(`Sur la ligne ${t} : ${error.response.data.msg}. Reessayez a partir de cette ligne`);
               return;
             })
             t++;
