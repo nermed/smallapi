@@ -16,26 +16,38 @@ app.use(bodyParser.json())
 app.get('/', (req, res) => res.send('Cool!!!'))
 
 app.post('/getInvoice', async function (req, res) {
-  let token = req.body.token
-  try {
-    const ress = await axios
-      .post('http://41.79.226.28:8345/ebms_api/getInvoice', {
-        headers: {
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: 'Bearer ' + token,
-        },
-      })
-      .then((rep) => console.log(rep))
-      .catch((error) => console.log(error))
-  } catch (error) {
-    console.log(error)
+  let token = ''
+  let login = req.body.loginData;
+  let signature = req.body.signature;
+  // console.log(req.body.signature);return;
+  await connect(login).then((data) => (token = data))
+  if (token) {
+    try {
+      const ress = await axios
+        .post(
+          'http://41.79.226.28:8345/ebms_api/getInvoice',
+          { invoice_signature: signature },
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Authorization: 'Bearer ' + token,
+            },
+          },
+        )
+        .then((rep) => {
+          res.status(rep.status).send(rep.data.result.invoices)
+        })
+        .catch((error) => console.log(error))
+    } catch (error) {
+      console.log(error)
+    }
   }
 })
 
 app.post('/check', async function (req, res) {
   let token = null
-  let nif = req.body.nif;
-  let login = req.body.loginData;
+  let nif = req.body.nif
+  let login = req.body.loginData
   await connect(login).then((data) => (token = data))
 
   if (token) {
@@ -78,10 +90,10 @@ app.post('/request', async function (req, res) {
     .post('http://41.79.226.28:8345/ebms_api/login', loginData, { headers })
     .then((rep) => (token = rep.data.result.token))
     .catch((error) => console.log(error))
-  if (data == null) {
-    res.status(200).send(token)
-    return
-  }
+  // if (data == null) {
+  //   res.status(200).send(token)
+  //   return
+  // }
   if (token.length > 0) {
     try {
       let t = 1
@@ -100,13 +112,13 @@ app.post('/request', async function (req, res) {
             )
             .then((rep) => console.log(rep.data.msg))
             .catch((error) => {
-              console.log(error)
+              // console.log(error);
               res
                 .status(error.response.status)
                 .send(
                   `Sur la ligne ${t} : ${error.response.data.msg}. Reessayez a partir de cette ligne`,
-                )
-              return
+                );
+              return;
             })
           t++
         } catch (error) {
