@@ -79,9 +79,9 @@ app.post('/check', async function (req, res) {
 
 app.post('/request', async function (req, res) {
   var loginData = req.body.loginData
-  var data = JSON.parse(req.body.data)
+  var data = req.body.data;
   var token = ''
-  var error = false
+  var error = false;
 
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -90,43 +90,33 @@ app.post('/request', async function (req, res) {
     .post('http://41.79.226.28:8345/ebms_api/login', loginData, { headers })
     .then((rep) => (token = rep.data.result.token))
     .catch((error) => console.log(error))
-  // if (data == null) {
-  //   res.status(200).send(token)
-  //   return
-  // }
+
   if (token.length > 0) {
     try {
-      let t = 1
-      data.forEach(async (element) => {
-        try {
-          const dataa = await axios
-            .post(
-              'http://41.79.226.28:8345/ebms_api/addInvoice',
-              JSON.stringify(element),
-              {
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                  Authorization: 'Bearer ' + token,
-                },
-              },
-            )
-            .then((rep) => console.log(rep.data.msg))
-            .catch((error) => {
-              // console.log(error);
-              res
-                .status(error.response.status)
-                .send(
-                  `Sur la ligne ${t} : ${error.response.data.msg}. Reessayez a partir de cette ligne`,
-                );
-              return;
-            })
-          t++
-        } catch (error) {
-          console.log('erreur')
+      const dataa = await axios
+      .post(
+        'http://41.79.226.28:8345/ebms_api/addInvoice',
+        data,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: 'Bearer ' + token,
+          },
+        },
+      )
+      .then((rep) => {
+        console.log('rep -> ', rep);
+        res.status(rep.status).send(rep);
+      })
+      .catch((error) => {
+        if(error.response) {
+          console.log(error.response.status);
+          res.status(error.response.status).send(`${error.response.data.msg} (${JSON.parse(data).invoice_number})`)
+          return;
         }
       })
     } catch (e) {
-      res.status(e.response.status).send('erreur' + e.response.data.msg)
+      res.status(e).send('erreur' + e)
     }
   }
 })
@@ -136,6 +126,43 @@ app.listen(process.env.PORT || port, () => {
   console.log(`listen on ${port}`)
 })
 
+const requesting = async (datas, token, verify, t = 0) => {
+  let errorRender = null;
+  let status = null;
+  const dataa = await axios
+    .post(
+      'http://41.79.226.28:8345/ebms_api/addInvoice',
+      JSON.stringify(datas[t]),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: 'Bearer ' + token,
+        },
+      },
+    )
+    .then((rep) => {
+      verify = true;
+    })
+    .catch((error) => {
+      errorRender = `${error.response.data.msg} (${datas[t].invoice_number})`;
+      status = error.response.status
+      verify = false;
+    })
+    if(verify) {
+      let tt = t + 1;
+      let end = false;
+      console.log('ok ', datas[t].invoice_number);
+      if(tt < datas.length) {
+        requesting(datas, token, verify, tt);
+        console.log('suivant -> ', datas[tt].invoice_number);
+      } else {
+        console.log('finis');
+        return {errorRender:'Finis', verify: false, status: 201};
+      }
+    } else {
+      return {errorRender, verify, status};
+    }
+}
 async function connect(loginData) {
   let token = null
 
