@@ -106,7 +106,8 @@ app.post('/request', async function (req, res) {
       )
       .then((rep) => {
         console.log('rep -> ', rep);
-        res.status(rep.status).send(rep);
+        res.status(rep.status).send(rep.data);
+        return;
       })
       .catch((error) => {
         if(error.response) {
