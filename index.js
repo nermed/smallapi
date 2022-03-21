@@ -31,6 +31,7 @@ app.post('/getInvoice', async function (req, res) {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
               Authorization: 'Bearer ' + token,
+              'Access-Control-Allow-Origin': '*',
             },
           },
         )
@@ -60,6 +61,7 @@ app.post('/check', async function (req, res) {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
               Authorization: 'Bearer ' + token,
+              'Access-Control-Allow-Origin': '*',
             },
           },
         )
@@ -82,7 +84,7 @@ app.post('/request', async function (req, res) {
   var data = req.body.data;
   var token = ''
   var error = false;
-
+  // console.log(loginData);return;
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
   }
@@ -101,6 +103,7 @@ app.post('/request', async function (req, res) {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             Authorization: 'Bearer ' + token,
+            'Access-Control-Allow-Origin': '*',
           },
         },
       )
