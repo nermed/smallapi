@@ -17,8 +17,8 @@ app.get('/', (req, res) => res.send('Cool!!!'))
 
 app.post('/getInvoice', async function (req, res) {
   let token = ''
-  let login = req.body.loginData
-  let signature = req.body.signature
+  let login = req.body.loginData;
+  let signature = req.body.signature;
   // console.log(req.body.signature);return;
   await connect(login).then((data) => (token = data))
   if (token) {
@@ -31,7 +31,6 @@ app.post('/getInvoice', async function (req, res) {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
               Authorization: 'Bearer ' + token,
-              'Access-Control-Allow-Origin': '*',
             },
           },
         )
@@ -61,7 +60,6 @@ app.post('/check', async function (req, res) {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
               Authorization: 'Bearer ' + token,
-              'Access-Control-Allow-Origin': '*',
             },
           },
         )
@@ -81,13 +79,12 @@ app.post('/check', async function (req, res) {
 
 app.post('/request', async function (req, res) {
   var loginData = req.body.loginData
-  var data = req.body.data
+  var data = req.body.data;
   var token = ''
-  var error = false
+  var error = false;
   // console.log(loginData);return;
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
-    'Access-Control-Allow-Origin': '*',
   }
   const ress = await axios
     .post('http://41.79.226.28:8345/ebms_api/login', loginData, { headers })
@@ -97,31 +94,28 @@ app.post('/request', async function (req, res) {
   if (token.length > 0) {
     try {
       const dataa = await axios
-        .post('http://41.79.226.28:8345/ebms_api/addInvoice', data, {
+      .post(
+        'http://41.79.226.28:8345/ebms_api/addInvoice',
+        data,
+        {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             Authorization: 'Bearer ' + token,
-            'Access-Control-Allow-Origin': '*',
           },
-        })
-        .then((rep) => {
-          console.log('rep -> ', rep)
-          res.status(rep.status).send(rep.data)
-          return
-        })
-        .catch((error) => {
-          if (error.response) {
-            console.log(error.response.status)
-            res
-              .status(error.response.status)
-              .send(
-                `${error.response.data.msg} (${
-                  JSON.parse(data).invoice_number
-                })`,
-              )
-            return
-          }
-        })
+        },
+      )
+      .then((rep) => {
+        console.log('rep -> ', rep);
+        res.status(rep.status).send(rep.data);
+        return;
+      })
+      .catch((error) => {
+        if(error.response) {
+          console.log(error.response.status);
+          res.status(error.response.status).send(`${error.response.data.msg} (${JSON.parse(data).invoice_number})`)
+          return;
+        }
+      })
     } catch (e) {
       res.status(e).send('erreur' + e)
     }
@@ -134,8 +128,8 @@ app.listen(process.env.PORT || port, () => {
 })
 
 const requesting = async (datas, token, verify, t = 0) => {
-  let errorRender = null
-  let status = null
+  let errorRender = null;
+  let status = null;
   const dataa = await axios
     .post(
       'http://41.79.226.28:8345/ebms_api/addInvoice',
@@ -144,39 +138,37 @@ const requesting = async (datas, token, verify, t = 0) => {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           Authorization: 'Bearer ' + token,
-          'Access-Control-Allow-Origin': '*',
         },
       },
     )
     .then((rep) => {
-      verify = true
+      verify = true;
     })
     .catch((error) => {
-      errorRender = `${error.response.data.msg} (${datas[t].invoice_number})`
+      errorRender = `${error.response.data.msg} (${datas[t].invoice_number})`;
       status = error.response.status
-      verify = false
+      verify = false;
     })
-  if (verify) {
-    let tt = t + 1
-    let end = false
-    console.log('ok ', datas[t].invoice_number)
-    if (tt < datas.length) {
-      requesting(datas, token, verify, tt)
-      console.log('suivant -> ', datas[tt].invoice_number)
+    if(verify) {
+      let tt = t + 1;
+      let end = false;
+      console.log('ok ', datas[t].invoice_number);
+      if(tt < datas.length) {
+        requesting(datas, token, verify, tt);
+        console.log('suivant -> ', datas[tt].invoice_number);
+      } else {
+        console.log('finis');
+        return {errorRender:'Finis', verify: false, status: 201};
+      }
     } else {
-      console.log('finis')
-      return { errorRender: 'Finis', verify: false, status: 201 }
+      return {errorRender, verify, status};
     }
-  } else {
-    return { errorRender, verify, status }
-  }
 }
 async function connect(loginData) {
   let token = null
 
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
-    'Access-Control-Allow-Origin': '*',
   }
   const ress = await axios
     .post('http://41.79.226.28:8345/ebms_api/login', loginData, { headers })
