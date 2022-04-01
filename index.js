@@ -25,7 +25,7 @@ app.post('/getInvoice', async function (req, res) {
     try {
       const ress = await axios
         .post(
-          'http://41.79.226.28:8345/ebms_api/getInvoice',
+          'http://ebms.obr.gov.bi:8443/ebms_api/getInvoice',
           { invoice_signature: signature },
           {
             headers: {
@@ -54,7 +54,7 @@ app.post('/check', async function (req, res) {
     try {
       const verify = await axios
         .post(
-          'http://41.79.226.28:8345/ebms_api/checkTIN',
+          'http://ebms.obr.gov.bi:8443/ebms_api/checkTIN',
           { tp_TIN: nif },
           {
             headers: {
@@ -87,7 +87,7 @@ app.post('/request', async function (req, res) {
     'Content-Type': 'application/x-www-form-urlencoded',
   }
   const ress = await axios
-    .post('http://41.79.226.28:8345/ebms_api/login', loginData, { headers })
+    .post('http://ebms.obr.gov.bi:8443/ebms_api/login', loginData, { headers })
     .then((rep) => (token = rep.data.result.token))
     .catch((error) => console.log(error))
 
@@ -95,7 +95,7 @@ app.post('/request', async function (req, res) {
     try {
       const dataa = await axios
       .post(
-        'http://41.79.226.28:8345/ebms_api/addInvoice',
+        'http://ebms.obr.gov.bi:8443/ebms_api/addInvoice',
         data,
         {
           headers: {
@@ -132,7 +132,7 @@ const requesting = async (datas, token, verify, t = 0) => {
   let status = null;
   const dataa = await axios
     .post(
-      'http://41.79.226.28:8345/ebms_api/addInvoice',
+      'http://ebms.obr.gov.bi:8443/ebms_api/addInvoice',
       JSON.stringify(datas[t]),
       {
         headers: {
@@ -171,7 +171,7 @@ async function connect(loginData) {
     'Content-Type': 'application/x-www-form-urlencoded',
   }
   const ress = await axios
-    .post('http://41.79.226.28:8345/ebms_api/login', loginData, { headers })
+    .post('http://ebms.obr.gov.bi:8443/ebms_api/login', loginData, { headers })
     .then((rep) => (token = rep.data.result.token))
     .catch((error) => console.log(error))
 
